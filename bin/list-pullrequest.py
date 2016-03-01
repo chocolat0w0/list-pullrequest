@@ -1,9 +1,16 @@
+#!/usr/bin/python
+
+import argparse
 import subprocess
 import json
 import pytz
 import dateutil.parser
 from datetime import datetime
 
+parser = argparse.ArgumentParser(description = 'list closed pull request')
+parser.add_argument('date', metavar = 'date', type = str, help = '[ex 2016-03-01 15:00:00] search after this (default: now)')
+parser.add_argument('-branch', default = None, action = 'store', help = 'filtering branch name (default: no filter)')
+args = parser.parse_args()
 
 def getPullRequestJson():
     originUrl = subprocess.check_output("git remote -v", shell=True)
@@ -29,16 +36,13 @@ class PullRequest:
         return self.__isTargetDate(datestring) and self._isTargetBranch(branch)
 
     def __isTargetDate(self, datestring):
-        return self.mergedAt >  datetime.strptime(datestring, '%Y-%m-%d %H:%M:%S').replace(tzinfo=self.jst)
+        return self.mergedAt > datetime.strptime(datestring, '%Y-%m-%d %H:%M:%S').replace(tzinfo=self.jst)
 
     def _isTargetBranch(self, branch):
         return self.toBranch == branch if branch is not None else True
 
     def output(self):
-        print '\n%s -> %s (merged at %s)' % (self.fromBranch, self.toBranch, self.mergedAt),
-
-datestring = '2016-03-01 13:35:00'
-branch = 'choco-branch'
+        print '\n%s %s -> %s' % (str(self.mergedAt)[:-6], self.fromBranch, self.toBranch),
 
 pullRequests = [PullRequest.create(row) for row in getPullRequestJson()]
-[pr.output() for pr in pullRequests if pr.isTarget(datestring, branch)]
+[pr.output() for pr in pullRequests if pr.isTarget(args.date, args.branch)]
