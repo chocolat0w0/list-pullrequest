@@ -8,7 +8,7 @@ import dateutil.parser
 from datetime import datetime
 
 parser = argparse.ArgumentParser(description = 'list closed pull request')
-parser.add_argument('date', metavar = 'date', type = str, help = '[ex 2016-03-01 15:00:00] search after this (default: now)')
+parser.add_argument('date', metavar = 'date', type = str, help = '[ex \'2016-03-01 15:00:00\'] search after this')
 parser.add_argument('-branch', default = None, action = 'store', help = 'filtering branch name (default: no filter)')
 args = parser.parse_args()
 
