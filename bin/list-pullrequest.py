@@ -6,6 +6,7 @@ import json
 import pytz
 import dateutil.parser
 from datetime import datetime
+from config import api
 
 parser = argparse.ArgumentParser(description = 'list closed pull request')
 parser.add_argument('date', metavar = 'date', type = str, help = '[ex \'2016-03-01 15:00:00\'] search after this')
@@ -17,7 +18,10 @@ def getPullRequestJson():
     originOwner = originUrl.split("/")[3]
     originRepo = originUrl.split("/")[4].split(".")[0]
 
-    command = 'curl https://api.github.com/repos/%s/%s/pulls?state=closed' % (originOwner, originRepo)
+    option = '-u %s:%s' % (api['user'], api['token']) if api['user'] and api['token'] else ''
+
+    command = 'curl %s https://api.github.com/repos/%s/%s/pulls?state=closed' % (option, originOwner, originRepo)
+    print command
     return json.loads(subprocess.check_output(command, shell=True))
 
 class PullRequest:
