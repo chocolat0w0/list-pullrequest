@@ -37,7 +37,7 @@ class PullRequest:
         return PullRequest(row['merged_at'], row['head']['ref'], row['base']['ref'])
 
     def __init__(self, mergedAt, fromBranch, toBranch):
-        self.mergedAt = dateutil.parser.parse(mergedAt).astimezone(self.jst)
+        self.mergedAt = dateutil.parser.parse(mergedAt).astimezone(self.jst) if mergedAt is not None else None
         self.fromBranch = fromBranch
         self.toBranch = toBranch
 
@@ -45,7 +45,7 @@ class PullRequest:
         return self.__isTargetDate(datestring) and self._isTargetBranch(branch)
 
     def __isTargetDate(self, datestring):
-        return self.mergedAt > datetime.strptime(datestring, '%Y-%m-%d %H:%M:%S').replace(tzinfo=self.jst)
+        return self.mergedAt > datetime.strptime(datestring, '%Y-%m-%d %H:%M:%S').replace(tzinfo=self.jst) if self.mergedAt is not None else False
 
     def _isTargetBranch(self, branch):
         return self.toBranch == branch if branch is not None else True
