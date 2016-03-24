@@ -6,6 +6,7 @@ import json
 import pytz
 import dateutil.parser
 from datetime import datetime
+import re
 from config import api
 
 parser = argparse.ArgumentParser(description = 'list closed pull request')
@@ -14,9 +15,13 @@ parser.add_argument('-branch', default = None, action = 'store', help = 'filteri
 args = parser.parse_args()
 
 def getPullRequestJson():
-    originUrl = subprocess.check_output("git remote -v", shell=True)
-    originOwner = originUrl.split("/")[3]
-    originRepo = originUrl.split("/")[4].split(".")[0]
+    originRE = re.compile('origin\s(.*)')
+    originUrl = originRE.search(subprocess.check_output('git remote -v', shell=True)).group(1)
+
+    httpUrlRE = re.compile(':(.*)\/(.*) ')
+
+    originOwner = originUrl.split('/')[3] if originUrl.startswith('http') else httpUrlRE.search(originUrl).group(1)
+    originRepo = originUrl.split('/')[4].split('.')[0] if originUrl.startswith('http') else httpUrlRE.search(originUrl).group(2).split('.')[0]
 
     option = '-u %s:%s' % (api['user'], api['token']) if api['user'] and api['token'] else ''
 
