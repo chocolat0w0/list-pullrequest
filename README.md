@@ -28,6 +28,7 @@ $ python list-pullrequest.py '2016-03-01 12:00:00' -b master
 
 ### 二段階認証を設定している場合
 - Githubの[アクセストークンページ](https://github.com/settings/tokens)で"Generate new token"する
+    - プライベートリポジトリの場合はrepo権限にチェックを入れる
 - `bin/config.py`に発行したトークンを記載する
 
 ```
