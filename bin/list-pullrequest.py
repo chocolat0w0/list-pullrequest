@@ -34,10 +34,11 @@ class PullRequest:
 
     @staticmethod
     def create(row):
-        return PullRequest(row['merged_at'], row['head']['ref'], row['base']['ref'])
+        return PullRequest(row['merged_at'], row['title'], row['head']['ref'], row['base']['ref'])
 
-    def __init__(self, mergedAt, fromBranch, toBranch):
+    def __init__(self, mergedAt, title, fromBranch, toBranch):
         self.mergedAt = dateutil.parser.parse(mergedAt).astimezone(self.jst) if mergedAt is not None else None
+        self.title = title
         self.fromBranch = fromBranch
         self.toBranch = toBranch
 
@@ -51,7 +52,7 @@ class PullRequest:
         return self.toBranch == branch if branch is not None else True
 
     def output(self):
-        print '\n%s %s -> %s' % (str(self.mergedAt)[:-6], self.fromBranch, self.toBranch),
+        print '\n%s %s (%s -> %s)' % (str(self.mergedAt)[:-6], self.title, self.fromBranch, self.toBranch),
 
 pullRequests = [PullRequest.create(row) for row in getPullRequestJson()]
 [pr.output() for pr in pullRequests if pr.isTarget(args.date, args.branch)]
