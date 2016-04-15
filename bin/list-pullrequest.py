@@ -1,10 +1,10 @@
 #!/usr/bin/python
 
 import argparse
-import subprocess
 import json
 import pytz
 import dateutil.parser
+import commands
 from datetime import datetime
 import re
 from config import api
@@ -17,7 +17,7 @@ args = parser.parse_args()
 
 def getCurrentRepository():
     originRE = re.compile('origin\s(.*)')
-    originUrl = originRE.search(subprocess.check_output('git remote -v', shell=True)).group(1)
+    originUrl = originRE.search(commands.getoutput('git remote -v')).group(1)
     httpUrlRE = re.compile(':(.*)\/(.*) ')
     originOwner = originUrl.split('/')[3] if originUrl.startswith('http') else httpUrlRE.search(originUrl).group(1)
     originRepository = originUrl.split('/')[4].split('.')[0] if originUrl.startswith('http') else httpUrlRE.search(originUrl).group(2).split('.')[0]
@@ -26,9 +26,9 @@ def getCurrentRepository():
 def getPullRequestJson():
     option = '-u %s:%s' % (api['user'], api['token']) if api['user'] and api['token'] else ''
     repository = args.repository if args.repository is not None else getCurrentRepository()
-    command = 'curl %s https://api.github.com/repos/%s/pulls?state=closed' % (option, repository)
-    print command
-    return json.loads(subprocess.check_output(command, shell=True))
+    command = 'curl -s %s https://api.github.com/repos/%s/pulls?state=closed' % (option, repository)
+    output = '\n'.join(commands.getoutput(command).split('\n'))
+    return json.loads(output[output.find('['):])
 
 class PullRequest:
     jst = pytz.timezone('Asia/Tokyo')
