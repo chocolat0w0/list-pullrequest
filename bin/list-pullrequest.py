@@ -12,20 +12,21 @@ from config import api
 parser = argparse.ArgumentParser(description = 'list closed pull request')
 parser.add_argument('date', metavar = 'date', type = str, help = '[ex \'2016-03-01 15:00:00\'] search after this')
 parser.add_argument('-branch', default = None, action = 'store', help = 'filtering branch name (default: no filter)')
+parser.add_argument('-repository', default = None, action = 'store', help = 'list pullrequests from this repository [ex \'chocolat0w0/list-pullrequest\'] (default: list from current repository)')
 args = parser.parse_args()
 
-def getPullRequestJson():
+def getCurrentRepository():
     originRE = re.compile('origin\s(.*)')
     originUrl = originRE.search(subprocess.check_output('git remote -v', shell=True)).group(1)
-
     httpUrlRE = re.compile(':(.*)\/(.*) ')
-
     originOwner = originUrl.split('/')[3] if originUrl.startswith('http') else httpUrlRE.search(originUrl).group(1)
-    originRepo = originUrl.split('/')[4].split('.')[0] if originUrl.startswith('http') else httpUrlRE.search(originUrl).group(2).split('.')[0]
+    originRepository = originUrl.split('/')[4].split('.')[0] if originUrl.startswith('http') else httpUrlRE.search(originUrl).group(2).split('.')[0]
+    return '%s/%s' % (originOwner, originRepository)
 
+def getPullRequestJson():
     option = '-u %s:%s' % (api['user'], api['token']) if api['user'] and api['token'] else ''
-
-    command = 'curl %s https://api.github.com/repos/%s/%s/pulls?state=closed' % (option, originOwner, originRepo)
+    repository = args.repository if args.repository is not None else getCurrentRepository()
+    command = 'curl %s https://api.github.com/repos/%s/pulls?state=closed' % (option, repository)
     print command
     return json.loads(subprocess.check_output(command, shell=True))
 
